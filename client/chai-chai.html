@@ -1,0 +1,28 @@
+<head>
+    <title>Welcome to chai chai!</title>
+</head>
+
+<body>
+<div class="wrapper">
+    <input type="text" id="username"><button>进入</button>
+    <div class="rooms">
+        <h2>Rooms</h2>
+        {{> rooms }}
+    </div>
+    <div class="chats">
+        <h2>Chats</h2>
+        {{> chats }}
+    </div>
+</div>
+</body>
+
+<template name="room">
+    <div class="room">
+        <span class="room-name">{{name}}</span>
+        <span class="enter">enter</span>
+    </div>
+</template>
+
+<template name="chat">
+    <div class="chat">{{content}}</div>
+</template>
