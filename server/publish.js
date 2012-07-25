@@ -1,5 +1,5 @@
 Meteor.publish("rooms", function() {
-    return ChatRoom.find();
+    return Room.find();
 });
 
 Meteor.publish("users", function() {

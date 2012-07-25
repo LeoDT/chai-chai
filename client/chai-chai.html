@@ -16,13 +16,17 @@
 </div>
 </body>
 
-<template name="room">
+<template name="rooms">
+    {{#rooms}}
     <div class="room">
         <span class="room-name">{{name}}</span>
         <span class="enter">enter</span>
     </div>
+    {{/rooms}}
 </template>
 
-<template name="chat">
+<template name="chats">
+    {{#chats}}
     <div class="chat">{{content}}</div>
+    {{/chats}}
 </template>
