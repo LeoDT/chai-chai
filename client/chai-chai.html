@@ -13,20 +13,27 @@
         <h2>Chats</h2>
         {{> chats }}
     </div>
+    {{> chat_input }}
 </div>
 </body>
 
 <template name="rooms">
-    {{#rooms}}
+    {{#each rooms}}
     <div class="room">
         <span class="room-name">{{name}}</span>
         <span class="enter">enter</span>
     </div>
-    {{/rooms}}
+    {{/each}}
 </template>
 
 <template name="chats">
-    {{#chats}}
+    {{#each chats}}
     <div class="chat">{{content}}</div>
-    {{/chats}}
+    {{/each}}
+</template>
+
+<template name="chat_input">
+    <div class="inputs">
+      	<input type="text" id="chat-text" />
+    </div>
 </template>

@@ -1,23 +1,45 @@
 
 Session.set("user_id", null);
 
-Session.set("room_ids", null);
+Session.set("room_id", null);
 
 Meteor.subscribe("rooms", function() {
-    if(!Session.get("room_ids")){
+    if(!Session.get("room_id")){
         var default_room = Room.findOne({name: "default"});
-	console.log(default_room);
         if(default_room){
-            Session.set("room_ids", [default_room]);
+            Session.set("room_id", default_room._id);
+	    Meteor.subscribe("chats", default_room._id);
         }
     }
 });
 
-Meteor.autosubscribe(function() {
-    var room_ids = Session.get("room_ids");
-    if(room_ids){
-        _.each(room_ids, function(room_id) {
-            Meteor.subscribe("chats", room_id);
-        });
+
+///////// rooms /////////
+Template.rooms.rooms = function(){
+    return Room.find();
+};
+Template.rooms.events = {
+    'click .enter': function(evt){
+	Session.set("room_id", this._id);
+        Meteor.subscribe("chats", this._id);
     }
-});
+};
+
+
+//////// chats //////////
+Template.chats.chats = function(){
+    return Chat.find({room_id: Session.get("room_id")});
+};
+
+
+/////// chat input ///////////
+Template.chat_input.events = {
+    "keyup #chat-text": function(e){
+        if(e.keyCode == 13){
+	    Chat.insert({
+	        room_id: Session.get("room_id"),
+	        content: e.target.value
+            });
+        }
+    }
+};
