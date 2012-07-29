@@ -4,7 +4,7 @@
 
 <body>
 <div class="wrapper">
-    <input type="text" id="username"><button>进入</button>
+    {{> profile}}
     <div class="rooms">
         <h2>Rooms</h2>
         {{> rooms }}
@@ -17,23 +17,36 @@
 </div>
 </body>
 
+<template name="profile">
+    <div class="login {{logined}}">
+	<input type="text" id="username" placeholder="username">
+    </div>
+    <div class="profile {{logined}}">
+        <h2>Hello, {{username}}</h2>
+    </div>
+</template>
+
 <template name="rooms">
     {{#each rooms}}
     <div class="room">
         <span class="room-name">{{name}}</span>
-        <span class="enter">enter</span>
+	{{#if in_room}}
+	<a></a>
+	{{else}}
+        <a href="#" class="enter">enter</a>
+	{{/if}}
     </div>
     {{/each}}
 </template>
 
 <template name="chats">
     {{#each chats}}
-    <div class="chat">{{content}}</div>
+    <div class="chat">{{{content}}} - by {{user_id}} at {{updated}}</div>
     {{/each}}
 </template>
 
 <template name="chat_input">
     <div class="inputs">
-      	<input type="text" id="chat-text" />
+      	<input type="text" id="chat-text">
     </div>
 </template>
