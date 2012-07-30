@@ -41,7 +41,7 @@
 
 <template name="chats">
     {{#each chats}}
-    <div class="chat">{{{content}}} - by {{user_id}} at {{updated}}</div>
+    <div class="chat">{{{content}}} - by <a href="#" class="user-id">{{user_id}}</a> at {{updated}}</div>
     {{/each}}
 </template>
 
