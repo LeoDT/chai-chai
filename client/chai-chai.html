@@ -9,11 +9,16 @@
         <h2>Rooms</h2>
         {{> rooms }}
     </div>
+    <div class="users">
+        <h2>Users</h2>
+	{{> users }}
+    </div>
     <div class="chats">
         <h2>Chats</h2>
         {{> chats }}
     </div>
     {{> chat_input }}
+    {{> search_chats}}
 </div>
 </body>
 
@@ -39,6 +44,17 @@
     {{/each}}
 </template>
 
+<template name="users">
+    {{#each users}}
+    <div class="user">
+        <span class="user-name">{{name}}</span>
+	{{#if can_chat}}
+	<a href="#" class="chat">chat</a>
+	{{/if}}
+    </div>
+    {{/each}}
+</template>
+
 <template name="chats">
     {{#each chats}}
     <div class="chat">{{{content}}} - by <a href="#" class="user-id">{{user_id}}</a> at {{updated}}</div>
@@ -48,5 +64,14 @@
 <template name="chat_input">
     <div class="inputs">
       	<input type="text" id="chat-text">
+    </div>
+</template>
+
+<template name="search_chats">
+    <div class="search-chats {{show}}">
+        <h2>Search Chat</h2>
+	{{#each chats}}
+	<div class="chat">{{{content}}} - by <a href="#" class="user-id">{{user_id}}</a> at {{updated}}</div>
+	{{/each}}
     </div>
 </template>

@@ -13,8 +13,31 @@ Meteor.subscribe("rooms", function() {
         }
     }
 });
+Meteor.subscribe("users");
+
+function register(username){
+    var exists = User.findOne({
+	"name": username
+    });
+
+    if(exists){
+	User.update({"name": username}, {$set:{
+	    "online": true
+        }});
+	return username;
+    }
+    else{
+	User.insert({
+	    "name": username,
+	    "online": true
+        });
+	return username;
+    }
+}
 
 function login(username){
+    username = register(username);    
+
     Session.set("user_id", username);
 
     amplify.store("profile", {"username": Session.get("user_id")});
@@ -59,6 +82,25 @@ Template.rooms.events = {
 };
 
 
+//////// users //////////
+Template.users.users = function(){
+    return User.find({
+        "online": true
+    });
+};
+Template.users.can_chat = function(){
+    if(this.name != Session.get("user_id")){
+	return true;
+    }
+    return false;
+};
+Template.users.events = {
+    "click .chat": function(e){
+	
+    }
+};
+
+
 //////// chats //////////
 Template.chats.chats = function(){
     return Chat.find({room_id: Session.get("room_id")});
@@ -82,5 +124,14 @@ Template.chat_input.events = {
             });
 	    e.target.value = "";
         }
+    },
+    "click .chat-tags": function(){
+	Session.set("search", 1);
     }
+};
+
+
+/////// search chats /////////
+Template.search_chats.show = function(){
+    return true;
 };
