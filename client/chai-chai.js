@@ -33,8 +33,13 @@ Template.profile.events = {
 	}
     }
 };
-Template.profile.logined = Session.get("user_id") ? "logined" : "login";
-Template.profile.username = Session.get("user_id");
+Template.profile.logined = function(){
+    return Session.get("user_id") ? "logined" : "login";
+};
+Template.profile.username = function(){
+    return Session.get("user_id");
+};
+
 
 ///////// rooms /////////
 Template.rooms.rooms = function(){
@@ -59,10 +64,9 @@ Template.chats.chats = function(){
     return Chat.find({room_id: Session.get("room_id")});
 };
 Template.chats.updated = function(){
-    return this.updated.replace("T", " ").replace("Z", "");
+    return moment(this.updated).local().format();
 };
 Template.chats.content = function(){
-    console.log(this.content);
     return this.content.replace(/(\#.*?\#)/ig, '<a class=\"chat-tags\" href="#">$1</a>');
 };
 
@@ -74,7 +78,7 @@ Template.chat_input.events = {
 	        room_id: Session.get("room_id"),
 	        content: e.target.value,
 		user_id: Session.get("user_id"),
-		updated: new Date()
+		updated: moment().utc().format()
             });
 	    e.target.value = "";
         }
