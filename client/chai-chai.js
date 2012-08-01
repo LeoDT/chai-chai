@@ -1,18 +1,9 @@
 var Profile = amplify.store("profile") || amplify.store("profile", {"username": ""});
 
 Session.set("user_id", Profile.username || null);
+Session.set("current_panel", null)
 
-Session.set("room_id", null);
-
-Meteor.subscribe("rooms", function() {
-    if(!Session.get("room_id")){
-        var default_room = Room.findOne({name: "default"});
-        if(default_room){
-            Session.set("room_id", default_room._id);
-	    Meteor.subscribe("chats", default_room._id);
-        }
-    }
-});
+Meteor.subscribe("rooms");
 Meteor.subscribe("users");
 
 function register(username){
@@ -36,7 +27,7 @@ function register(username){
 }
 
 function login(username){
-    username = register(username);    
+    username = register(username);
 
     Session.set("user_id", username);
 
@@ -65,19 +56,45 @@ Template.profile.username = function(){
 
 
 ///////// rooms /////////
+function enter_room(room){
+    var panels = $(".panels"),
+    panel_id = "panel_" + room._id,
+
+    panel = Meteor.ui.render(function(){
+        Template.panel.events = {
+            "keyup .chat-text": function(e){
+                if(e.ctrlKey && e.keyCode == 13 && e.target.value){
+                    Chat.insert({
+                        room_id: room._id,
+                        content: e.target.value,
+                        user_id: Session.get("user_id"),
+                        updated: moment().utc().format()
+                    });
+                    e.target.value = "";
+                }
+            },
+            "click .hide": function(e){
+                $("#" + panel_id).detach();
+            }
+        };
+        return Template.panel({
+            panel_title: "panel " + room.name,
+            panel_id: panel_id,
+            panel_type: "room",
+            chats: Chat.find({room_id: room._id})
+        });
+    });
+
+    panels.append(panel);
+
+    Meteor.subscribe("chats", room._id);
+}
 Template.rooms.rooms = function(){
     return Room.find();
 };
-Template.rooms.in_room = function(){
-    if(this._id == Session.get("room_id")){
-	return true;
-    }
-    return false;
-};
 Template.rooms.events = {
     'click .enter': function(evt){
-	Session.set("room_id", this._id);
-        Meteor.subscribe("chats", this._id);
+        enter_room(this);
     }
 };
 
@@ -96,38 +113,17 @@ Template.users.can_chat = function(){
 };
 Template.users.events = {
     "click .chat": function(e){
-	
+
     }
 };
 
 
 //////// chats //////////
-Template.chats.chats = function(){
-    return Chat.find({room_id: Session.get("room_id")});
-};
-Template.chats.updated = function(){
+Template.chat_item.updated = function(){
     return moment(this.updated).local().format();
 };
-Template.chats.content = function(){
+Template.chat_item.content = function(){
     return this.content.replace(/(\#.*?\#)/ig, '<a class=\"chat-tags\" href="#">$1</a>');
-};
-
-/////// chat input ///////////
-Template.chat_input.events = {
-    "keyup #chat-text": function(e){
-        if(e.ctrlKey && e.keyCode == 13 && e.target.value){
-	    Chat.insert({
-	        room_id: Session.get("room_id"),
-	        content: e.target.value,
-		user_id: Session.get("user_id"),
-		updated: moment().utc().format()
-            });
-	    e.target.value = "";
-        }
-    },
-    "click .chat-tags": function(){
-	Session.set("search", 1);
-    }
 };
 
 

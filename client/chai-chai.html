@@ -4,21 +4,31 @@
 
 <body>
 <div class="wrapper">
-    {{> profile}}
-    <div class="rooms">
-        <h2>Rooms</h2>
-        {{> rooms }}
+    <div class="header">
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container-fluid">
+		    {{> profile }}
+                </div>
+	    </div>
+        </div>
     </div>
-    <div class="users">
-        <h2>Users</h2>
-	{{> users }}
+    <div class="container-fluid">
+        <div class="side span2">
+	    <div class="rooms">
+                <h2>Rooms</h2>
+                {{> rooms }}
+            </div>
+            <div class="users">
+                <h2>Users</h2>
+                {{> users }}
+            </div>
+        </div>
+        <div class="main span8">
+            <div class="panels">
+            </div>
+        </div>
     </div>
-    <div class="chats">
-        <h2>Chats</h2>
-        {{> chats }}
-    </div>
-    {{> chat_input }}
-    {{> search_chats}}
 </div>
 </body>
 
@@ -35,11 +45,7 @@
     {{#each rooms}}
     <div class="room">
         <span class="room-name">{{name}}</span>
-	{{#if in_room}}
-	<a></a>
-	{{else}}
         <a href="#" class="enter">enter</a>
-	{{/if}}
     </div>
     {{/each}}
 </template>
@@ -55,16 +61,20 @@
     {{/each}}
 </template>
 
-<template name="chats">
-    {{#each chats}}
-    <div class="chat">{{{content}}} - by <a href="#" class="user-id">{{user_id}}</a> at {{updated}}</div>
-    {{/each}}
+<template name="panel">
+    <div id="{{panel_id}}" class="panel {{panel_type}}">
+        <h3 class="panel-title">{{panel_title}}<i class="icon-remove"></i></h3>
+	{{#each chats}}
+	    {{> chat_item }}
+	{{/each}}
+	<div class="inputs">
+      	    <input type="text" class="chat-text">
+	</div>
+    </div>
 </template>
 
-<template name="chat_input">
-    <div class="inputs">
-      	<input type="text" id="chat-text">
-    </div>
+<template name="chat_item">
+    <div class="chat">{{{content}}} - by <a href="#" class="user-id">{{user_id}}</a> at {{updated}}</div>
 </template>
 
 <template name="search_chats">
