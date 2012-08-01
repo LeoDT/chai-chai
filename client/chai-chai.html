@@ -36,16 +36,22 @@
     <div class="login {{logined}}">
 	<input type="text" id="username" placeholder="username">
     </div>
-    <div class="profile {{logined}}">
-        <h2>Hello, {{username}}</h2>
+    <div class="profile pull-right {{logined}}">
+        <ul class="nav pull-right">
+	    <li class="dropdown" id="nav-drop-down">
+		<a class="username dropdown-toggle" data-toggle="dropdown" href="#nav-drop-down">{{username}}<b class="caret"></b></a>
+		<ul class="dropdown-menu">
+		    <li><a href="#">Logout</a></li>
+		</ul>
+	    </li>
+        </ul>
     </div>
 </template>
 
 <template name="rooms">
     {{#each rooms}}
     <div class="room">
-        <span class="room-name">{{name}}</span>
-        <a href="#" class="enter">enter</a>
+        <a class="room-name" href="#">{{name}}</a>({{user_count}})
     </div>
     {{/each}}
 </template>
@@ -63,7 +69,7 @@
 
 <template name="panel">
     <div id="{{panel_id}}" class="panel {{panel_type}}">
-        <h3 class="panel-title">{{panel_title}}<i class="icon-remove"></i></h3>
+        <h3 class="panel-title">{{panel_title}}<i class="icon-remove quit-room"></i></h3>
 	{{#each chats}}
 	    {{> chat_item }}
 	{{/each}}

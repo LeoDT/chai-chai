@@ -1,10 +1,14 @@
-var Profile = amplify.store("profile") || amplify.store("profile", {"username": ""});
+var profile = amplify.store("profile") || amplify.store("profile", {"username": ""}),
+last_session = amplify.store("last_session") || amplify.store("last_session", []);
 
-Session.set("user_id", Profile.username || null);
-Session.set("current_panel", null)
+Session.set("user_id", profile.username || null);
 
-Meteor.subscribe("rooms");
-Meteor.subscribe("users");
+Meteor.subscribe("rooms", function(){
+    init();
+});
+Meteor.subscribe("users", function(){
+    login(Session.get("user_id"));
+});
 
 function register(username){
     var exists = User.findOne({
@@ -34,6 +38,25 @@ function login(username){
     amplify.store("profile", {"username": Session.get("user_id")});
 }
 
+function init(){
+    if(!_.isEmpty(last_session)){
+        _.each(last_session, function(v,i){
+            var session_id = v.replace("panel_", ""),
+                room = Room.findOne({_id: session_id}),
+                user;
+            if(room){
+                enter_room(room);
+            }
+            else{
+                user = User.find({_id: session_id});
+                if(user){
+                    console.log("last_session: user " + session_id);
+                }
+            }
+        });
+    }
+}
+
 ///////// profile /////////
 Template.profile.events = {
     'keyup #username': function(e){
@@ -58,7 +81,8 @@ Template.profile.username = function(){
 ///////// rooms /////////
 function enter_room(room){
     var panels = $(".panels"),
-    panel_id = "panel_" + room._id,
+        panel_id = "panel_" + room._id,
+        panel;
 
     panel = Meteor.ui.render(function(){
         Template.panel.events = {
@@ -73,8 +97,10 @@ function enter_room(room){
                     e.target.value = "";
                 }
             },
-            "click .hide": function(e){
+            "click .quit-room": function(e){
                 $("#" + panel_id).detach();
+                Room.update({_id: room._id}, {$pull: {"entered_users": Session.get("user_id")}});
+                amplify.store("last_session", _.without(last_session, panel_id));
             }
         };
         return Template.panel({
@@ -87,15 +113,22 @@ function enter_room(room){
 
     panels.append(panel);
 
+    Room.update({_id: room._id}, {$addToSet: {"entered_users": Session.get("user_id")}});
+    amplify.store("last_session", _.union(last_session, [panel_id]));
+
     Meteor.subscribe("chats", room._id);
 }
 Template.rooms.rooms = function(){
     return Room.find();
 };
 Template.rooms.events = {
-    'click .enter': function(evt){
+    'click .room-name': function(e){
         enter_room(this);
+        e.preventDefault();
     }
+};
+Template.rooms.user_count = function(){
+    return this.entered_users ? this.entered_users.length : 0;
 };
 
 
