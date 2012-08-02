@@ -1,41 +1,43 @@
-var profile = amplify.store("profile") || amplify.store("profile", {"username": ""}),
+var profile = amplify.store("profile") || amplify.store("profile", {"user_id": ""}),
 last_session = amplify.store("last_session") || amplify.store("last_session", []);
 
-Session.set("user_id", profile.username || null);
+Session.set("user_id", profile.user_id || null);
 
-Meteor.subscribe("rooms", function(){
+Meteor.subscribe("rooms");
+Meteor.subscribe("users", function(){
+    if(Session.get("user_id")){
+        login(Session.get("user_id"));
+    }
+
     init();
 });
-Meteor.subscribe("users", function(){
-    login(Session.get("user_id"));
-});
 
-function register(username){
+function register(username, callback){
     var exists = User.findOne({
 	"name": username
     });
 
     if(exists){
-	User.update({"name": username}, {$set:{
+	User.update({"_id": exists._id}, {$set:{
 	    "online": true
         }});
-	return username;
+        callback(exists._id);
     }
     else{
 	User.insert({
 	    "name": username,
 	    "online": true
+        }, function(error, user_id){
+            callback(user_id);
         });
-	return username;
     }
 }
 
-function login(username){
-    username = register(username);
-
-    Session.set("user_id", username);
-
-    amplify.store("profile", {"username": Session.get("user_id")});
+function login(user_id){
+    if(User.findOne({_id: user_id})){
+        Session.set("user_id", user_id);
+        amplify.store("profile", {"user_id": Session.get("user_id")});
+    }
 }
 
 function init(){
@@ -48,13 +50,21 @@ function init(){
                 enter_room(room);
             }
             else{
-                user = User.find({_id: session_id});
+                user = User.findOne({_id: session_id});
                 if(user){
-                    console.log("last_session: user " + session_id);
+                    chat_user(user);
                 }
             }
         });
     }
+    Message.find({to_user_id: Session.get("user_id")}).observe({
+        added: function(msg, index){
+            var panel_id = "panel_" + msg.user_id;
+            if($("#"+panel_id).length < 1){
+                chat_user(User.findOne({_id: msg.user_id}));
+            }
+        }
+    });
 }
 
 ///////// profile /////////
@@ -65,8 +75,10 @@ Template.profile.events = {
 		alert("username must be inputed.");
 	    }
 	    else{
-		login(e.target.value);
-	    }
+                register(e.target.value, function(user_id){
+                    login(user_id);
+                });
+            }
 	}
     }
 };
@@ -74,7 +86,11 @@ Template.profile.logined = function(){
     return Session.get("user_id") ? "logined" : "login";
 };
 Template.profile.username = function(){
-    return Session.get("user_id");
+    var user = User.findOne({_id: Session.get("user_id")});
+    if(user){
+        return user.name;
+    }
+    return "";
 };
 
 
@@ -133,20 +149,55 @@ Template.rooms.user_count = function(){
 
 
 //////// users //////////
+function chat_user(user){
+    var panels = $(".panels"),
+        panel_id = "panel_" + user._id,
+        panel;
+
+    panel = Meteor.ui.render(function(){
+        Template.panel.events = {
+            "keyup .chat-text": function(e){
+                if(e.ctrlKey && e.keyCode == 13 && e.target.value){
+                    Message.insert({
+                        to_user_id: user._id,
+                        content: e.target.value,
+                        user_id: Session.get("user_id"),
+                        updated: moment().utc().format()
+                    });
+                    e.target.value = "";
+                }
+            },
+            "click .quit-room": function(e){
+                $("#" + panel_id).detach();
+                amplify.store("last_session", _.without(last_session, panel_id));
+            }
+        };
+        return Template.panel({
+            panel_title: "panel " + user.name,
+            panel_id: panel_id,
+            panel_type: "message",
+            chats: Message.find({$or: [
+                {to_user_id: Session.get("user_id"), user_id: user._id},
+                {user_id: Session.get("user_id"), to_user_id: user._id}
+            ]})
+        });
+    });
+
+    panels.append(panel);
+
+    amplify.store("last_session", _.union(last_session, [panel_id]));
+
+    Meteor.subscribe("messages", Session.get("user_id"), user._id);
+}
 Template.users.users = function(){
     return User.find({
         "online": true
     });
 };
-Template.users.can_chat = function(){
-    if(this.name != Session.get("user_id")){
-	return true;
-    }
-    return false;
-};
 Template.users.events = {
     "click .chat": function(e){
-
+        chat_user(this);
+        e.preventDefault();
     }
 };
 
@@ -154,6 +205,9 @@ Template.users.events = {
 //////// chats //////////
 Template.chat_item.updated = function(){
     return moment(this.updated).local().format();
+};
+Template.chat_item.username = function(){
+    return User.findOne({_id: this.user_id}).name;
 };
 Template.chat_item.content = function(){
     return this.content.replace(/(\#.*?\#)/ig, '<a class=\"chat-tags\" href="#">$1</a>');

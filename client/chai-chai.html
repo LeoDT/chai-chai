@@ -60,9 +60,7 @@
     {{#each users}}
     <div class="user">
         <span class="user-name">{{name}}</span>
-	{{#if can_chat}}
-	<a href="#" class="chat">chat</a>
-	{{/if}}
+	<a href="#" class="chat">chat</a>	
     </div>
     {{/each}}
 </template>
@@ -80,7 +78,7 @@
 </template>
 
 <template name="chat_item">
-    <div class="chat">{{{content}}} - by <a href="#" class="user-id">{{user_id}}</a> at {{updated}}</div>
+    <div class="chat">{{{content}}} - by <a href="#" class="user-id">{{username}}</a> at {{updated}}</div>
 </template>
 
 <template name="search_chats">
