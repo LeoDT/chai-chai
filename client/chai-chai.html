@@ -4,21 +4,12 @@
 
 <body>
 <div class="wrapper">
-    <div class="header">
-        <div class="navbar navbar-fixed-top">
-            <div class="navbar-inner">
-                <div class="container-fluid">
-		    {{> profile }}
-                </div>
-	    </div>
-        </div>
-    </div>
+    {{> profile }}
     <div class="container-fluid">
-        <div class="side span2">
-	    <div class="rooms">
-                <h2>Rooms</h2>
-                {{> rooms }}
-            </div>
+        <div class="rooms tile-list">
+	    {{> rooms }}
+	</div>
+        <div class="side span2">	    
             <div class="users">
                 <h2>Users</h2>
                 {{> users }}
@@ -50,8 +41,27 @@
 
 <template name="rooms">
     {{#each rooms}}
-    <div class="room">
-        <a class="room-name" href="#">{{name}}</a>({{user_count}})
+    <div class="room tile">
+        <div class="tile-body">
+	    {{#if latest_chat}}
+            <div class="chat">
+		<strong>{{latest_chat.name}}</strong>
+		<p class="chat-content">
+		    {{{latest_chat.content}}}
+		</p>
+            </div>
+	    {{else}}
+            <div class="empty-room">
+            </div>
+	    {{/if}}
+            <span class="room-name">{{name}}</span>
+            <span class="user-count">{{user_count}}</span>
+	    <div class="extra">
+		<span class="enter-room">
+                    <span class="inner">&gt;&gt;</span>
+		</span>
+	    </div>
+	</div>
     </div>
     {{/each}}
 </template>
@@ -78,7 +88,8 @@
 </template>
 
 <template name="chat_item">
-    <div class="chat">{{{content}}} - by <a href="#" class="user-id">{{username}}</a> at {{updated}}</div>
+    <div class="chat">
+	<p class="chat-content">{{{content}}}</p> - by <a href="#" class="user-id">{{username}}</a> at {{updated}}</div>
 </template>
 
 <template name="search_chats">

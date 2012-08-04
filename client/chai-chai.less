@@ -1,5 +1,13 @@
+//colors
+@white: #FFF;
+@black: #121417;
+@tile_blue: #33B5E5;
+
+//fonts
+@import url(http://fonts.googleapis.com/css?family=Hammersmith+One);
+
 .wrapper{
-    padding: 60px 0 0;
+    padding: 50px 0 0;
 }
 .profile,
 .login.logined{
@@ -7,4 +15,78 @@
 }
 .profile.logined{
     display: block;
+}
+
+
+//tile
+.tile{
+    background-color: @tile_blue;
+    color: #FFF;
+    cursor: pointer;
+    display: inline-block;
+    width: 165px;
+    height: 98px;
+    vertical-align: top;
+    margin: 0 3px;
+    position: relative;
+    overflow: hidden;
+}
+.tile-body{
+    height: 98px;
+}
+
+
+//rooms
+.tile.room .user-count{
+    color: fade(@white, 20%);
+    font-size: 145px;
+    position: absolute;
+    top: 37px;
+    left: -20px;
+    z-index: 0;
+}
+.tile.room .room-name{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-size: 24px;
+    z-index: 1;
+}
+.tile.room .chat{
+    padding: 0 4px;
+    font-size: 14px;
+
+    position: absolute;
+    top: 2px;
+
+    -webkit-transition: top .1s ease-out;
+}
+.tile.room .chat.update{
+    top: -100px;
+}
+.tile.room .chat-content{
+    font-size: 12px;
+    height: 54px;
+    overflow: hidden;
+}
+.tile.room .enter-room{
+    background-color: darken(@tile_blue, 40%);
+    display: block;
+    height: 24px;
+    width: 100%;
+    left: 0;
+    bottom: -24px;
+    position: absolute;
+    font-size: 24px;
+    z-index: 0;
+
+    -webkit-transition: bottom .06s ease-in;
+}
+.tile.room .enter-room.show{
+    bottom: 0;
+}
+.tile.room .inner{
+    position: absolute;
+    top: 6px;
+    left: 0;
 }

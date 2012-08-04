@@ -100,6 +100,10 @@ function enter_room(room){
         panel_id = "panel_" + room._id,
         panel;
 
+    if($("#" + panel_id).length > 0){
+        return false;
+    }
+
     panel = Meteor.ui.render(function(){
         Template.panel.events = {
             "keyup .chat-text": function(e){
@@ -129,22 +133,50 @@ function enter_room(room){
 
     panels.append(panel);
 
-    Room.update({_id: room._id}, {$addToSet: {"entered_users": Session.get("user_id")}});
+    Room.update({_id: room._id}, {$addToSet: {entered_users: Session.get("user_id")}});
     amplify.store("last_session", _.union(last_session, [panel_id]));
 
     Meteor.subscribe("chats", room._id);
+
+    return true;
 }
 Template.rooms.rooms = function(){
     return Room.find();
 };
 Template.rooms.events = {
-    'click .room-name': function(e){
+    'click .tile-body': function(e){
         enter_room(this);
         e.preventDefault();
+    },
+    "mouseenter .tile-body": function(e){
+        var tile = $(e.target).parent(),
+            room_name = tile.find(".room-name"),
+            enter = tile.find(".enter-room"),
+            enter_inner = enter.find(".inner");
+
+        enter_inner.css("left", tile.width() - enter_inner.width() - room_name.width());
+
+        enter.addClass("show");
+    },
+    "mouseleave .tile-body": function(e){
+        var enter = $(e.target).parent().find(".enter-room");
+
+        enter.removeClass("show");
     }
 };
 Template.rooms.user_count = function(){
     return this.entered_users ? this.entered_users.length : 0;
+};
+Template.rooms.latest_chat = function(){
+    var chat = Chat.findOne({room_id: this._id}, {sort: [["updated", "desc"]]}),
+    user;
+    if(chat){
+        user = User.findOne({_id: chat.user_id});
+        return {
+            content: chat.content,
+            name: user.name
+        };
+    }
 };
 
 
@@ -212,7 +244,6 @@ Template.chat_item.username = function(){
 Template.chat_item.content = function(){
     return this.content.replace(/(\#.*?\#)/ig, '<a class=\"chat-tags\" href="#">$1</a>');
 };
-
 
 /////// search chats /////////
 Template.search_chats.show = function(){
