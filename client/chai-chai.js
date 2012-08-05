@@ -162,6 +162,10 @@ Template.rooms.events = {
         var enter = $(e.target).parent().find(".enter-room");
 
         enter.removeClass("show");
+    },
+
+    "afterinsert": function(e){
+        console.log(e);
     }
 };
 Template.rooms.user_count = function(){
