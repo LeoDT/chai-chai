@@ -4,6 +4,7 @@ last_session = amplify.store("last_session") || amplify.store("last_session", []
 Session.set("user_id", profile.user_id || null);
 
 Meteor.subscribe("rooms");
+
 Meteor.subscribe("users", function(){
     if(Session.get("user_id")){
         login(Session.get("user_id"));
@@ -57,13 +58,30 @@ function init(){
             }
         });
     }
+
     Message.find({to_user_id: Session.get("user_id")}).observe({
         added: function(msg, index){
             var panel_id = "panel_" + msg.user_id;
-            if($("#"+panel_id).length < 1){
+            if($("#" + panel_id).length < 1){
                 chat_user(User.findOne({_id: msg.user_id}));
             }
         }
+    });
+
+    Room.find().forEach(function(room){
+        Meteor.subscribe("chats", room._id);
+    });
+
+    $(".panel-tabs").on("click", ".tab a", function(e){
+        var tab_link = $(e.target),
+            tab = tab_link.parent(),
+            pane = $(tab_link.attr("href"));
+
+        $(".tab-pane").removeClass("active");
+        pane.addClass("active");
+
+        $(".tab").removeClass("active");
+        tab.addClass("active");
     });
 }
 
@@ -96,9 +114,11 @@ Template.profile.username = function(){
 
 ///////// rooms /////////
 function enter_room(room){
-    var panels = $(".panels"),
+    var tabs = $(".panel-tabs"),
+        panels = $(".panels"),
         panel_id = "panel_" + room._id,
-        panel;
+        panel_tab_id = "panel_tab_" + room._id,
+        panel, tab;
 
     if($("#" + panel_id).length > 0){
         return false;
@@ -116,11 +136,6 @@ function enter_room(room){
                     });
                     e.target.value = "";
                 }
-            },
-            "click .quit-room": function(e){
-                $("#" + panel_id).detach();
-                Room.update({_id: room._id}, {$pull: {"entered_users": Session.get("user_id")}});
-                amplify.store("last_session", _.without(last_session, panel_id));
             }
         };
         return Template.panel({
@@ -129,14 +144,33 @@ function enter_room(room){
             panel_type: "room",
             chats: Chat.find({room_id: room._id})
         });
+    }),
+
+    tab = Meteor.ui.render(function(){
+        Template.panel_tab.events = {
+            "click .quit": function(e){
+                $("#" + panel_id).detach();
+                $("#" + panel_tab_id).detach();
+                Room.update({_id: room._id}, {$pull: {"entered_users": Session.get("user_id")}});
+                amplify.store("last_session", _.without(last_session, panel_id));
+
+                return false;
+            }
+        };
+        return Template.panel_tab({
+            panel_title: room.name,
+            panel_tab_id: panel_tab_id,
+            panel_id: panel_id
+        });
     });
 
     panels.append(panel);
+    tabs.append(tab);
 
     Room.update({_id: room._id}, {$addToSet: {entered_users: Session.get("user_id")}});
     amplify.store("last_session", _.union(last_session, [panel_id]));
 
-    Meteor.subscribe("chats", room._id);
+//    Meteor.subscribe("chats", room._id);
 
     return true;
 }
@@ -187,8 +221,10 @@ Template.rooms.latest_chat = function(){
 //////// users //////////
 function chat_user(user){
     var panels = $(".panels"),
+        tabs = $(".panel-tabs"),
         panel_id = "panel_" + user._id,
-        panel;
+        panel_tab_id = "panel_tab_" + user._id,
+        panel, tab;
 
     panel = Meteor.ui.render(function(){
         Template.panel.events = {
@@ -202,10 +238,6 @@ function chat_user(user){
                     });
                     e.target.value = "";
                 }
-            },
-            "click .quit-room": function(e){
-                $("#" + panel_id).detach();
-                amplify.store("last_session", _.without(last_session, panel_id));
             }
         };
         return Template.panel({
@@ -219,7 +251,26 @@ function chat_user(user){
         });
     });
 
+    tab = Meteor.ui.render(function(){
+        Template.panel_tab.events = {
+            "click .quit": function(e){
+                $("#" + panel_id).detach();
+                $("#" + panel_tab_id).detach();
+                amplify.store("last_session", _.without(last_session, panel_id));
+
+                return false;
+            }
+        };
+
+        return Template.panel_tab({
+            panel_title: user.name,
+            panel_id: panel_id,
+            panel_tab_id: panel_tab_id
+        });
+    });
+
     panels.append(panel);
+    tabs.append(tab);
 
     amplify.store("last_session", _.union(last_session, [panel_id]));
 

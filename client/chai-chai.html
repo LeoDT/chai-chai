@@ -6,9 +6,6 @@
 <div class="wrapper">
     {{> profile }}
     <div class="container-fluid">
-        <div class="rooms tile-list">
-	    {{> rooms }}
-	</div>
         <div class="side span2">	    
             <div class="users">
                 <h2>Users</h2>
@@ -16,7 +13,15 @@
             </div>
         </div>
         <div class="main span8">
-            <div class="panels">
+            <ul class="panel-tabs nav nav-pills">
+                <li class="panel-tab active tab"><a href="#panel-rooms">Rooms</a></li>
+            </ul>
+            <div class="panels tab-content">
+                <div class="panel rooms tab-pane in active" id="panel-rooms">
+                    <div class="tile-list">
+			{{> rooms }}
+		    </div>
+		</div>
             </div>
         </div>
     </div>
@@ -75,9 +80,14 @@
     {{/each}}
 </template>
 
+<template name="panel_tab">
+    <li class="panel-tab tab" id="{{panel_tab_id}}">
+	<a href="#{{panel_id}}">{{panel_title}}<i class="icon-remove icon-white quit"></i></a>
+    </li>
+</template>
+
 <template name="panel">
-    <div id="{{panel_id}}" class="panel {{panel_type}}">
-        <h3 class="panel-title">{{panel_title}}<i class="icon-remove quit-room"></i></h3>
+    <div id="{{panel_id}}" class="panel {{panel_type}} tab-pane">
 	{{#each chats}}
 	    {{> chat_item }}
 	{{/each}}
@@ -89,7 +99,9 @@
 
 <template name="chat_item">
     <div class="chat">
-	<p class="chat-content">{{{content}}}</p> - by <a href="#" class="user-id">{{username}}</a> at {{updated}}</div>
+	<a href="#" class="user-id">{{username}}</a>
+	<p class="chat-content tile">{{{content}}}</p>
+    </div>
 </template>
 
 <template name="search_chats">

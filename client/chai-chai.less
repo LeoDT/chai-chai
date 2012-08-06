@@ -17,26 +17,33 @@
     display: block;
 }
 
+.panel-tab a{
+    color: @white;
+}
+
 
 //tile
 .tile{
     background-color: @tile_blue;
     color: #FFF;
-    cursor: pointer;
-    display: inline-block;
-    width: 165px;
-    height: 98px;
     vertical-align: top;
-    margin: 0 3px;
     position: relative;
     overflow: hidden;
-}
-.tile-body{
-    height: 98px;
 }
 
 
 //rooms
+.tile.room{
+    cursor: pointer;
+    display: inline-block;
+    width: 165px;
+    height: 98px;
+    margin: 0 3px;
+
+}
+.tile.room .tile-body{
+    height: 98px;
+}
 .tile.room .user-count{
     color: fade(@white, 20%);
     font-size: 145px;
@@ -89,4 +96,13 @@
     position: absolute;
     top: 6px;
     left: 0;
+}
+
+.room.panel .chat,
+.message.panel .chat{
+    margin: 5px 0;
+}
+.panel .chat .chat-content{
+    display: inline-block;
+    padding: 5px;
 }
